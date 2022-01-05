@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WakeMan</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    .operate-button {
+      width: 48px;
+      height: 24px;
+      border: 1px solid;
+      border-radius: 8px;
+      margin-left: 4px;
+      text-align: center;
+      background: lightcoral;
+      box-shadow: 4px 4px 4px #888888;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    
+
+    .operate-button:hover {
+      background: lightblue;
+    }
+
+    .mg-l-16 {
+      margin-left: 16px !important;
+    }
+
+    .mg-b-24 {
+      margin-bottom: 24px !important;
+    }
+
+    #control-panel {
+      width: 320px;
+      height: 320px;
+      border: 1px solid;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <div style="width: 100%;height: 100vh;display: flex;flex-direction: column;justify-content: center;align-items: center;">
+    <div id="control-panel" style="position: relative;">
+      <div class="mg-b-24">
+        <h2>控制面板</h2>
+      </div>
+      <div class="mg-b-24" style="display: flex;">
+        <div class="operate-button" onclick="onStart()">开始</div>
+        <div class="operate-button" onclick="onStop()">停止</div>
+        <div class="operate-button" onclick="onClear()">清空</div>
+      </div>
+      <div>
+        <select id="time-selector" style="width: 56px;height: 24px;" onchange="onChange(this)">
+          <option value="1">1s</option>
+          <option value="30">30s</option>
+          <option value="60">1min</option>
+          <option value="300">5min</option>
+        </select>
+      </div>
+      <div id="output-panel" style="
+        width: 15%;
+        min-width: 200px;
+        max-width: 320px;
+        height: 640px;
+        overflow-y: hidden;
+        background: lightsalmon;
+        position: absolute;
+        right: -320px;
+        top: -50%;
+        font-size: 14px;
+        line-height: 16px;
+      ">
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+<script>
+  var outputPanel = document.getElementById('output-panel');
+  var value = 60000;
+  var task;
+  var count = 0;
+  var total = 40;
+  var pointer = 0;
+
+  function onStart() {
+    var time = value ? value : 60000;
+    clearInterval(task);
+    addHtml("启动");
+    awake();
+    task = setInterval(awake, time);
+  }
+
+  function awake() {
+    var objWs = new ActiveXObject("Wscript.shell");
+    objWs.SendKeys("{SCROLLLOCK}");
+    addHtml("执行次数：" + count++);
+  }
+
+  function onStop() {
+    clearInterval(task);
+    task = undefined;
+    addHtml("停止执行");
+  }
+
+  function addHtml(content) {
+    if (pointer >= total) {
+      outputPanel.removeChild(outputPanel.firstElementChild);
+      outputPanel.innerHTML += "< id='" + pointer++ + "'>" + content + "</div>";
+    }
+  }
+
+  function onClear() {
+    outputPanel.innerHTML = "";
+    pointer = 0;
+  }
+
+  function onChange(obj) {
+    value = obj.options[obj.selectedIndex].value * 1000;
+    addHtml("修改时间间隔：" + value + "ms");
+    if (task) {
+      onStop();
+      addHtml("重新启动");
+      onStart(value);
+    }
+  }
+</script>
